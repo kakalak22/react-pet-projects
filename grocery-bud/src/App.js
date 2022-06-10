@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import List from "./List";
 import Alert from "./Alert";
 
+let count = 0;
+
 const getLocalStorage = () => {
   const list = localStorage.getItem("list");
   return JSON.parse(list);
@@ -10,7 +12,7 @@ const getLocalStorage = () => {
 function App() {
   const [list, setList] = useState(getLocalStorage());
   const [input, setInput] = useState("");
-  const [editIndex, setEditIndex] = useState();
+  const [edit, setEdit] = useState({ isEdit: false, index: "" });
   const [alert, setAlert] = useState({ status: false, type: "", msg: "" });
 
   useEffect(() => {
@@ -25,11 +27,11 @@ function App() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const newList = [...list];
-    if (editIndex) {
-      newList[editIndex] = input;
+    if (edit.isEdit) {
+      newList[edit.index] = input;
       setList(newList);
       setInput("");
-      setEditIndex("");
+      setEdit({ isEdit: false, index: "" });
       showAlert(true, "success", "Edited");
       return;
     }
@@ -47,7 +49,7 @@ function App() {
   };
 
   const handleEdit = (input, index) => {
-    setEditIndex(index);
+    setEdit({ isEdit: true, index: index });
     setInput(input);
   };
 
@@ -56,6 +58,8 @@ function App() {
     showAlert(true, "danger", "Deleted");
     setList(newList);
   };
+
+  console.log(count++);
 
   return (
     <main className="section">
@@ -70,7 +74,7 @@ function App() {
               onChange={(event) => setInput(event.currentTarget.value)}
             />
             <button className="submit-btn" type="submit">
-              {editIndex ? "Edit" : "Submit"}
+              {edit.isEdit ? "Edit" : "Submit"}
             </button>
           </form>
         </div>
