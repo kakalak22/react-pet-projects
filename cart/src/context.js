@@ -6,23 +6,24 @@ import reducer from './reducer'
 const url = 'https://course-api.com/react-useReducer-cart-project'
 const AppContext = React.createContext()
 
+const initialState = {
+  loading: false,
+  cart: cartItems,
+  total: 0,
+  count: 0
+}
 
 
 const AppProvider = ({ children }) => {
-  const [cart, setCart] = useState(cartItems);
-  const [total, setTotal] = useState(0);
-  const [count, setCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const fetchData = async () => {
-    setIsLoading(true);
+    dispatch({ type: 'LOADING' })
     try {
       const cart = await fetch(url).then(response => response.json());
-      setCart(cart);
-      setIsLoading(false);
+      dispatch({ type: 'DISPLAY_ITEM', payload: cart });
     } catch (e) {
       console.log(e);
-      setIsLoading(false);
     }
   }
   useEffect(() => {
@@ -31,50 +32,30 @@ const AppProvider = ({ children }) => {
 
   useEffect(() => {
     calculateTotal();
-  }, [cart, count])
+  }, [state.cart])
 
   const calculateTotal = () => {
-    const total = cart.reduce((prevVal, currentVal) => (prevVal + currentVal.amount * currentVal.price), 0);
-    const roundedTotal = Number(total).toFixed(2);
-    const count = cart.reduce((prevVal, currentVal) => (prevVal + currentVal.amount), 0);
-    setTotal(roundedTotal);
-    setCount(count);
+    dispatch({ type: 'GET_TOTAL' });
   }
 
   const removeItem = (id) => {
-    const newCart = cart.filter(item => item.id !== id);
-    setCart(newCart);
+    dispatch({ type: 'REMOVE_ITEM', payload: id });
   }
 
   const increaseAmount = (id) => {
-    const index = cart.findIndex(item => item.id === id);
-    const newCart = [...cart];
-    newCart[index].amount = cart[index].amount + 1;
-    setCart(newCart);
+    dispatch({ type: 'INCREASE', payload: id });
   }
 
-  const degreaseAmount = (id) => {
-
-    const index = cart.findIndex(item => item.id === id);
-    const newCart = [...cart];
-    if (cart[index].amount === 1) {
-      removeItem(id);
-      return;
-    }
-    newCart[index].amount = cart[index].amount - 1;
-    setCart(newCart);
+  const decreaseAmount = (id) => {
+    dispatch({ type: 'DECREASE', payload: id });
   }
 
   return (
     <AppContext.Provider
       value={{
-        cart,
-        total,
-        count,
-        isLoading,
-        setCart,
+        ...state,
         increaseAmount,
-        degreaseAmount,
+        decreaseAmount,
         removeItem,
       }}
     >
