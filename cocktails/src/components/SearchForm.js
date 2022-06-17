@@ -8,7 +8,7 @@ const SearchForm = () => {
     <div className="search">
       <form className="search-form">
         <div className="form-control">
-          <label>Search your favorate cocktailk</label>
+          <label>Search for your favorite cocktail</label>
           <input type="text" onChange={(event) => (handleInput(event))} />
         </div>
       </form>
