@@ -8,7 +8,7 @@ const AppContext = React.createContext()
 
 const initialState = {
   loading: false,
-  cart: cartItems,
+  cart: [],
   total: 0,
   count: 0
 }
@@ -20,7 +20,8 @@ const AppProvider = ({ children }) => {
   const fetchData = async () => {
     dispatch({ type: 'LOADING' })
     try {
-      const cart = await fetch(url).then(response => response.json());
+      const response = await fetch(url);
+      const cart = await response.json();
       dispatch({ type: 'DISPLAY_ITEM', payload: cart });
     } catch (e) {
       console.log(e);
@@ -50,12 +51,17 @@ const AppProvider = ({ children }) => {
     dispatch({ type: 'DECREASE', payload: id });
   }
 
+  const toggleAmount = (id, type) => {
+    dispatch({ type: 'TOGGLE_AMOUNT', payload: { id: id, type: type } });
+  }
+
   return (
     <AppContext.Provider
       value={{
         ...state,
         increaseAmount,
         decreaseAmount,
+        toggleAmount,
         removeItem,
       }}
     >
