@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import List from "./List";
+import ShowList from "./showList";
 import Alert from "./Alert";
-
-let count = 0;
+import Form from "./Form";
 
 const getLocalStorage = () => {
   const list = localStorage.getItem("list");
@@ -10,10 +9,16 @@ const getLocalStorage = () => {
 };
 
 function App() {
-  const [list, setList] = useState(getLocalStorage());
+  const [list, setList] = useState([]);
   const [input, setInput] = useState("");
   const [edit, setEdit] = useState({ isEdit: false, index: "" });
   const [alert, setAlert] = useState({ status: false, type: "", msg: "" });
+
+  useEffect(() => {
+    const list = getLocalStorage();
+    list !== null ?
+      setList(list) : setList([]);
+  }, []);
 
   useEffect(() => {
     const jsonList = JSON.stringify(list);
@@ -27,13 +32,21 @@ function App() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const newList = [...list];
-    if (edit.isEdit) {
-      newList[edit.index] = input;
-      setList(newList);
-      setInput("");
-      setEdit({ isEdit: false, index: "" });
-      showAlert(true, "success", "Edited");
-      return;
+    const { isEdit, index } = edit;
+    if (isEdit) {
+      if (input.trim().length > 0) {
+        newList[index] = input;
+        setList(newList);
+        setInput("");
+        setEdit({ isEdit: false, index: "" });
+        showAlert(true, "success", "Edited");
+        return;
+      } else {
+        showAlert(true, "danger", "Please input");
+        setInput(list[index]);
+        console.log(edit, list[index]);
+        return;
+      }
     }
 
     if (input.trim().length > 0) {
@@ -59,31 +72,18 @@ function App() {
     setList(newList);
   };
 
-  console.log(count++);
-
   return (
     <main className="section">
       <section className="section-center">
         <Alert alert={alert} showAlert={showAlert} />
         <div className="grocery-form">
           <h3>Grocery Bud</h3>
-          <form className="form-control" onSubmit={handleSubmit}>
-            <input
-              type="text"
-              value={input}
-              onChange={(event) => setInput(event.currentTarget.value)}
-            />
-            <button className="submit-btn" type="submit">
-              {edit.isEdit ? "Edit" : "Submit"}
-            </button>
-          </form>
+          <Form onFormSubmit={handleSubmit} input={input} onInputChange={setInput} edit={edit} />
         </div>
-        <List list={list} onEdit={handleEdit} onDelete={handleDelete} />
-        {list.length > 0 && (
-          <button className="clear-btn" onClick={() => setList([])}>
-            Clear all
-          </button>
-        )}
+        {list.length > 0 ? <ShowList list={list} onEdit={handleEdit} onDelete={handleDelete} onSet={setList} /> : <article className="grocery-container">
+
+          <h3>Add something....</h3>
+        </article>}
       </section>
     </main>
   );
